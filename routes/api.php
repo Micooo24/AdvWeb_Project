@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\BrandController;
+use App\Http\Controllers\ProductController;
 
 
 /*
@@ -23,4 +25,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::apiResource('customers', CustomerController::class);
 
+Route::apiResource('brands', BrandController::class);
 Route::apiResource('suppliers', SupplierController::class);
+Route::apiResource('products', ProductController::class);

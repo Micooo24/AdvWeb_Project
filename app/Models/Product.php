@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Product extends Model
 {
     use HasFactory;
+    protected $table = 'products';
+    protected $primaryKey = 'id';
 
     protected $fillable = ['name', 'brand_id', 'supplier_id', 'description', 'cost', 'img_path'];
 
@@ -20,11 +22,11 @@ class Product extends Model
         return $this->hasMany(Feedback::class);
     }
 
-    public function supplier() {
+    public function suppliers() {
         return $this->belongsTo(Supplier::class);
     }
 
-    public function brand() {
+    public function brands() {
         return $this->belongsTo(Brand::class);
     }
 

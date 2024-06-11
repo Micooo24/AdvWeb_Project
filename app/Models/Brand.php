@@ -8,11 +8,18 @@ use Illuminate\Database\Eloquent\Model;
 class Brand extends Model
 {
     use HasFactory;
+    protected $table = 'brands';
+    protected $primaryKey = 'id';
+    public $timestamps = true; // To use created_at and updated_at fields
+    protected $fillable = [
+        'id',
+        'brand_name',
+        'logo',
+        'description'
+    ];
 
-    protected $fillable = ['brand_name', 'logo', 'description', 'img_path'];
-
-    public function products()
+    public function product()
     {
-        return $this->hasMany(Product::class);
+        return $this->belongsTo(Product::class, 'id');
     }
 }

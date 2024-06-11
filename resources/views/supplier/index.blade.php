@@ -1,79 +1,65 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Supplier Management</title>
-    <link href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css" rel="stylesheet">
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-</head>
-<body>
-<div class="container mt-5">
-    <h2 class="mb-4">Supplier Management</h2>
-    <button type="button" class="btn btn-success mb-3" id="createNewSupplier">Add Supplier</button>
-    <table class="table table-bordered data-table">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Contact Number</th>
-                <th>Image</th>
-                <th width="150px">Action</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
-    </table>
-</div>
+@extends('layouts.master')
+@section('content')
+<div id="suppliers" class="container">
+    <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#supplierModal"  >add<span  class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+<div class="card-body" style="height: 210px;">
+     <input type="text" id='supplierSearch' placeholder="--search--">
+           </div>
+ <div  class="table-responsive">
+   <table id="itable" class="table table-striped table-hover">
+     <thead>
+       <tr>
+         <th>Supplier ID</th>
+         <th>Image</th>
+         <th>Name</th>
+         <th>Email</th>
+         <th>Contact Number</th>
+         <th>Actions</th>
 
-<!-- Supplier Modal -->
-<div class="modal fade" id="ajaxModel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="modelHeading"></h4>
+         </tr>
+     </thead>
+     <tbody id="ibody">
+
+     </tbody>
+   </table>
+ </div>
+</div>
+<div class="modal fade" id="supplierModal" role="dialog" style="display:none">
+ <div class="modal-dialog modal-lg" >
+     <div class="modal-content">
+       <div class="modal-header">
+         <h4 class="modal-title">Create New Supplier</h4>
+           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+       </div>
+         <div class="modal-body">
+           <form id="iform" method="#" action="#" enctype="multipart/form-data">
+
+            <div class="form-group">
+                 <label for="name_id" class="control-label">Name</label>
+                 <input type="text" class="form-control" id="name_id" name="name"  >
             </div>
-            <div class="modal-body">
-                <form id="supplierForm" name="supplierForm" class="form-horizontal" enctype="multipart/form-data">
-                    <input type="hidden" name="supplier_id" id="supplier_id">
-                    <div class="form-group">
-                        <label for="name" class="col-sm-2 control-label">Name</label>
-                        <div class="col-sm-12">
-                            <input type="text" class="form-control" id="name" name="name" placeholder="Enter Name" value="" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="email" class="col-sm-2 control-label">Email</label>
-                        <div class="col-sm-12">
-                            <input type="email" class="form-control" id="email" name="email" placeholder="Enter Email" value="" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="contact_number" class="col-sm-2 control-label">Contact Number</label>
-                        <div class="col-sm-12">
-                            <input type="text" class="form-control" id="contact_number" name="contact_number" placeholder="Enter Contact Number" value="" required>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="img_path" class="col-sm-2 control-label">Image</label>
-                        <div class="col-sm-12">
-                            <input type="file" class="form-control" id="img_path" name="img_path">
-                        </div>
-                    </div>
-                    <div class="col-sm-offset-2 col-sm-10">
-                        <button type="submit" class="btn btn-primary" id="saveBtn" value="create">Save changes</button>
-                    </div>
-                </form>
+            <div class="form-group">
+               <label for="email_id" class="control-label">Email</label>
+               <input type="text" class="form-control " id="email_id" name="email">
+             </div>
+             <div class="form-group">
+               <label for="contact_id" class="control-label">Contact Number</label>
+               <input type="text" class="form-control " id="contact_id" name="contact_number" >
+             </div>
+             <div class="form-group">
+                <label for="image" class="control-label">Image</label>
+                <input type="file" class="form-control" id="image" name="uploads[]" multiple />
             </div>
+
+           </form>
+         </div>
+       <div class="modal-footer">
+         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+         <button id="supplierSubmit" type="submit" class="btn btn-primary">Save</button>
+         <button id="supplierUpdate" type="submit" class="btn btn-primary">Update</button>
         </div>
-    </div>
-</div>
 
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-<script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-<script src="{{ asset('js/supplier.js') }}"></script> <!-- Include the supplier.js file here -->
-</body>
-</html>
+     </div>
+ </div>
+</div>
+@endsection

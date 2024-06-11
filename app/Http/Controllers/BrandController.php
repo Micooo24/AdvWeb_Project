@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use App\Models\Brand;
+use Illuminate\Support\Facades\Storage;
 
 class BrandController extends Controller
 {
@@ -11,15 +13,8 @@ class BrandController extends Controller
      */
     public function index()
     {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        $data = Brand::all();
+        return response()->json($data);
     }
 
     /**
@@ -27,7 +22,30 @@ class BrandController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $request->validate([
+            'brand_name' => 'required|string|max:255',
+            'description' => 'required|string|max:255',
+            'uploads' => 'required|file|mimes:jpeg,png,jpg,gif,svg|max:2048'
+        ]);
+
+        $brand = new Brand();
+        $brand->brand_name = $request->brand_name;
+        $brand->description = $request->description;
+
+        $file = $request->file('uploads');
+        if ($file) {
+            $filePath = 'images/' . $file->getClientOriginalName();
+            Storage::put('public/' . $filePath, file_get_contents($file));
+            $brand->logo = $filePath;
+        }
+
+        $brand->save();
+
+        return response()->json([
+            "success" => "Brand created successfully.",
+            "brand" => $brand,
+            "status" => 200
+        ]);
     }
 
     /**
@@ -35,15 +53,8 @@ class BrandController extends Controller
      */
     public function show(string $id)
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
+        $brand = Brand::findOrFail($id);
+        return response()->json($brand);
     }
 
     /**
@@ -51,7 +62,37 @@ class BrandController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'brand_name' => 'required|string|max:255',
+            'description' => 'required|string|max:255',
+            'uploads' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg|max:2048'
+        ]);
+
+        $brand = Brand::find($id);
+
+        if (!$brand) {
+            return response()->json([
+                "error" => "Brand not found.",
+                "status" => 404
+            ], 404);
+        }
+
+        $brand->brand_name = $request->brand_name;
+        $brand->description = $request->description;
+
+        $file = $request->file('uploads');
+        if ($file) {
+            $filePath = 'images/' . $file->getClientOriginalName();
+            Storage::put('public/' . $filePath, file_get_contents($file));
+            $brand->logo = $filePath;
+        }
+        $brand->save();
+
+        return response()->json([
+            "success" => "Brand updated successfully.",
+            "brand" => $brand,
+            "status" => 200
+        ]);
     }
 
     /**
@@ -59,6 +100,12 @@ class BrandController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $brand = Brand::findOrFail($id);
+        if ($brand->logo) {
+            Storage::delete('public/' . $brand->logo);
+        }
+        $brand->delete();
+
+        return response()->json(['success' => 'Brand deleted successfully.', 'code' => 200]);
     }
 }

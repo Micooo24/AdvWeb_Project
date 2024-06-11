@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Supplier;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use DataTables;
 use Storage;
 
@@ -12,80 +13,116 @@ class SupplierController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index(Request $request)
-{
-    if ($request->ajax()) {
-        $data = Supplier::all();
-        return Datatables::of($data)
-                ->addIndexColumn()
-                ->addColumn('action', function($row){
-                    $btn = '<a href="javascript:void(0)" data-toggle="tooltip" data-id="'.$row->id.'" data-original-title="Edit" class="edit btn btn-primary btn-sm editSupplier">Edit</a>';
-                    $btn .= ' <a href="javascript:void(0)" data-toggle="tooltip" data-id="'.$row->id.'" data-original-title="Delete" class="btn btn-danger btn-sm deleteSupplier">Delete</a>';
-                    return $btn;
-                })
-                ->editColumn('img_path', function($row) {
-                    return $row->img_path ? "<img src='" . url('images/'.$row->img_path) . "' width='50' class='img-thumbnail' />" : '';
-                })
-                ->rawColumns(['action', 'img_path'])
-                ->make(true);
+
+    public function index()
+    {
+        // $items = Item::with('stock')->get();
+        $suppliers = Supplier::orderBy('id', 'DESC')->get();
+        return response()->json($suppliers);
     }
 
-    return view('supplier.index');
-}
-
-public function show($id)
-{
-    $supplier = Supplier::findOrFail($id);
-    return view('suppliers.show', compact('supplier'));
-}
-
-
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        //
+    }
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
 {
+    $supplier = new Supplier;
+    $supplier ->name = $request->name;
+    $supplier ->email = $request->email;
+    $supplier ->contact_number = $request->contact_number;
+    $supplier ->img_path = ''; // Provide a default value
 
-    dd($request->file('img_path'));
-
-    $supplier = new Supplier();
-    $supplier->name = $request->name;
-    $supplier->email = $request->email;
-    $supplier->contact_number = $request->contact_number;
-
-    if ($request->hasFile('img_path')) {
-        $file = $request->file('img_path');
-        $fileName = $file->getClientOriginalName();
-        $file->storeAs('public/images', $fileName);
-        $supplier->img_path = 'storage/images/' . $fileName;
+    if ($request->hasFile('uploads')) {
+        foreach ($request->file('uploads') as $file) {
+            $fileName = Str::random(20) . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('public/images', $fileName);
+            $supplier->img_path .= 'storage/images/' . $fileName . ','; // Append image path
+        }
+        $supplier ->img_path = rtrim($supplier->img_path, ','); // Remove trailing comma
     }
 
-    $supplier->save();
+    $supplier ->save();
 
-    return response()->json([
-        "success" => "Supplier created successfully.",
-        "customer" => $supplier,
-        "status" => 200
-    ]);
+    return response()->json(["success" => "Supplier created successfully.", "supplier" => $supplier , "status" => 200]);
 }
-
+    /**
+     * Display the specified resource.
+     */
+    public function show(string $id)
+    {
+        $supplier = Supplier::where('id', $id)->first();
+        return response()->json($supplier );
+    }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit($id)
+    public function edit(string $id)
     {
-        $supplier = Supplier::find($id);
-        return response()->json($supplier);
+        //
     }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, string $id)
+{
+    $supplier = Supplier::find($id);
+
+    if (!$supplier ) {
+        return response()->json(["error" => "Supplier not found.", "status" => 404]);
+    }
+
+    $supplier ->name = $request->name;
+    $supplier ->email = $request->email;
+    $supplier ->contact_number= $request->contact_number;
+
+    // Handle multiple image uploads
+    if ($request->hasFile('uploads')) {
+        // Optionally: Remove old images if they should be replaced
+        // $item->images()->delete();
+
+        $imagePaths = [];
+
+        foreach ($request->file('uploads') as $file) {
+            $fileName = Str::random(20) . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('public/images', $fileName);
+            // Store the image path in the database
+            $imagePaths[] = 'storage/images/' . $fileName;
+        }
+
+        // Store the concatenated image paths in the database
+        $supplier ->img_path = implode(',', $imagePaths);
+    }
+
+    $supplier->save();
+
+    return response()->json(["success" => "Supplier updated successfully.", "supplier " => $supplier, "status" => 200]);
+}
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy($id)
+    public function destroy(string $id)
     {
-        Supplier::find($id)->delete();
-        return response()->json(['success' => 'Supplier deleted successfully.']);
+
+
+        if (Supplier::find($id)) {
+            Supplier::destroy($id);
+            $data = array('success' => 'deleted', 'code' => 200);
+            return response()->json($data);
+        }
+        $data = array('error' => 'Supplier not deleted', 'code' => 400);
+        return response()->json($data);
     }
 }
+
+
