@@ -12,10 +12,17 @@ $(document).ready(function () {
                 text: 'Add Supplier',
                 className: 'btn btn-primary',
                 action: function (e, dt, node, config) {
+                    // Reset the form
                     $("#iform").trigger("reset");
+                    // Remove validation messages
+                    $('.error-message').remove();
+                    // Show the modal
                     $('#supplierModal').modal('show');
+                    // Hide the update button and show the submit button
                     $('#supplierUpdate').hide();
-                    $('#supplierImages').remove()
+                    $('#supplierSubmit').show();
+                    // Remove existing images display
+                    $('#supplierImages').remove();
                 }
             }
         ],
@@ -46,36 +53,33 @@ $(document).ready(function () {
         ],
     }); // end datatable
 
+    // Add Supplier Submit
     $("#supplierSubmit").on('click', function (e) {
         e.preventDefault();
-        var data = $('#iform')[0];
-        console.log(data);
-        let formData = new FormData(data);
-        console.log(formData);
-        for (var pair of formData.entries()) {
-            console.log(pair[0] + ', ' + pair[1]);
+        if (validateForm()) {
+            var data = new FormData($('#iform')[0]);
+            $.ajax({
+                type: "POST",
+                url: "/api/suppliers",
+                data: data,
+                contentType: false,
+                processData: false,
+                headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                dataType: "json",
+                success: function (data) {
+                    console.log(data);
+                    $("#supplierModal").modal("hide");
+                    var $itable = $('#itable').DataTable();
+                    $itable.ajax.reload();
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
         }
-        $.ajax({
-            type: "POST",
-            url: "/api/suppliers",
-            data: formData,
-            contentType: false,
-            processData: false,
-            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
-            dataType: "json",
-            success: function (data) {
-                console.log(data);
-                $("#supplierModal").modal("hide");
-                var $itable = $('#itable').DataTable();
-                // $itable.row.add(data.results).draw(false);
-                $itable.ajax.reload()
-            },
-            error: function (error) {
-                console.log(error);
-            }
-        });
     });
 
+    // Edit Supplier Button
     $('#itable tbody').on('click', 'a.editBtn', function (e) {
         e.preventDefault();
         $('#supplierImages').remove();
@@ -117,43 +121,35 @@ $(document).ready(function () {
         });
     });
 
-
+    // Update Supplier Submit
     $("#supplierUpdate").on('click', function (e) {
         e.preventDefault();
-        var id = $('#supplierId').val();
-        console.log(id);
-        var table = $('#itable').DataTable();
-        // var cRow = $("tr td:eq(" + id + ")").closest('tr');
-        var data = $('#iform')[0];
-        let formData = new FormData(data);
-        formData.append("_method", "PUT")
-        // // var formData = $("#cform").serialize();
-        // console.log(formData);
-        // formData.append('_method', 'PUT')
-        // for (var pair of formData.entries()) {
-        //     console.log(pair[0] + ', ' + pair[1]);
-        // }
-        $.ajax({
-            type: "POST",
-            url: `http://localhost:8000/api/suppliers/${id}`,
-            data: formData,
-            contentType: false,
-            processData: false,
-            headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
-            dataType: "json",
-            success: function (data) {
-                console.log(data);
-                $('#supplierModal').modal("hide");
+        if (validateForm()) {
+            var id = $('#supplierId').val();
+            var data = new FormData($('#iform')[0]);
+            data.append("_method", "PUT");
 
-                table.ajax.reload()
-
-            },
-            error: function (error) {
-                console.log(error);
-            }
-        });
+            $.ajax({
+                type: "POST",
+                url: `http://localhost:8000/api/suppliers/${id}`,
+                data: data,
+                contentType: false,
+                processData: false,
+                headers: { 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content') },
+                dataType: "json",
+                success: function (data) {
+                    console.log(data);
+                    $('#supplierModal').modal("hide");
+                    $('#itable').DataTable().ajax.reload();
+                },
+                error: function (error) {
+                    console.log(error);
+                }
+            });
+        }
     });
 
+    // Delete Supplier
     $('#itable tbody').on('click', 'a.deletebtn', function (e) {
         e.preventDefault();
         var table = $('#itable').DataTable();
@@ -174,7 +170,7 @@ $(document).ready(function () {
             },
             callback: function (result) {
                 console.log(result);
-                if (result)
+                if (result) {
                     $.ajax({
                         type: "DELETE",
                         url: `http://localhost:8000/api/suppliers/${id}`,
@@ -185,15 +181,62 @@ $(document).ready(function () {
                             $row.fadeOut(4000, function () {
                                 table.row($row).remove().draw();
                             });
-
                             bootbox.alert(data.success);
                         },
                         error: function (error) {
                             bootbox.alert(data.error);
                         }
                     });
+                }
             }
         });
-    })
-})
+    });
+});
 
+// Validate form function
+function validateForm() {
+    var isValid = true;
+    var name = $('#name_id').val().trim();
+    var email = $('#email_id').val().trim();
+    var contactNumber = $('#contact_id').val().trim();
+    var imageFiles = $('#image')[0].files;
+
+    // Clear previous error messages
+    $('.error-message').remove();
+
+    if (!name) {
+        $('#name_id').after('<span class="error-message text-danger">Name is required.</span>');
+        isValid = false;
+    }
+    if (!/^[^\d]+$/.test(name)) {
+        $('#name_id').after('<span class="error-message text-danger">Name must not contain digits.</span>');
+        isValid = false;
+    }
+    if (!email) {
+        $('#email_id').after('<span class="error-message text-danger">Email is required.</span>');
+        isValid = false;
+    } else if (!/\S+@\S+\.\S+/.test(email)) {
+        $('#email_id').after('<span class="error-message text-danger">Invalid email format.</span>');
+        isValid = false;
+    }
+    if (!contactNumber) {
+        $('#contact_id').after('<span class="error-message text-danger">Contact number is required.</span>');
+        isValid = false;
+    } else if (!/^\d+$/.test(contactNumber)) {
+        $('#contact_id').after('<span class="error-message text-danger">Contact number must contain only digits.</span>');
+        isValid = false;
+    }
+    if (imageFiles.length > 0) {
+        $.each(imageFiles, function (index, file) {
+            var fileType = file['type'];
+            var validImageTypes = ["image/jpeg", "image/png", "image/jpg"];
+            if ($.inArray(fileType, validImageTypes) < 0) {
+                $('#image').after('<span class="error-message text-danger">Invalid image type. Only JPG, JPEG, and PNG are allowed.</span>');
+                isValid = false;
+                return false; // Breaks the each loop
+            }
+        });
+    }
+
+    return isValid;
+}

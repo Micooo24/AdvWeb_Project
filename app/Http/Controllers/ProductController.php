@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Product;
 use App\Models\Supplier;
 use App\Models\Brand;
-
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -14,48 +13,49 @@ class ProductController extends Controller
     /**
      * Display a listing of the resource.
      */
+    public function index()
+    {
+        // Eager load brand and supplier relationships
+        $products = Product::with(['brand', 'supplier'])->orderByDesc('id')->get();
+        $brands = Brand::all();
+        $suppliers = Supplier::all();
 
+        return response()->json([
+            'products' => $products,
+            'brands' => $brands,
+            'suppliers' => $suppliers
+        ]);
+    }
 
-     public function index()
-     {
-         // Get all products with their associated brand and supplier
-         $products = Product::with('brand', 'supplier')->orderBy('id', 'DESC')->get();
+//     public function index()
+// {
+//     // Eager load brand and supplier relationships
+//     $products = Product::with(['brand:id,brand_name', 'supplier:id,name'])->orderByDesc('id')->get();
+//     $brands = Brand::all();
+//     $suppliers = Supplier::all();
 
-         // Get all brands and suppliers
-         $brands = Brand::all();
-         $suppliers = Supplier::all();
-
-         // Return the view with products, brands, and suppliers
-        //  return view('products.index', [
-        //      'products' => $products,
-        //      'brands' => $brands,
-        //      'suppliers' => $suppliers,
-        //  ]);
-
-         return view('product.index', compact('brands', 'suppliers'));
-     }
-
-    // public function index(Request $request)
-    // {
-    //     $data = Product::with(['brand', 'supplier'])->get();
-
-    //     $brands = Brand::all();
-    //     $suppliers = Supplier::all();
-
-    //     return response()->json([
-    //         'products' => $data,
-    //         'brands' => $brands,
-    //         'suppliers' => $suppliers
-    //     ]);
-    // }
-
-
+//     return response()->json([
+//         'products' => $products,
+//         'brands' => $brands,
+//         'suppliers' => $suppliers
+//     ]);
+// }
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
+        // Validate the request
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'brand_id' => 'required|exists:brands,id',
+            'supplier_id' => 'required|exists:suppliers,id',
+            'description' => 'nullable|string',
+            'cost' => 'required|numeric',
+            'uploads.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048'
+        ]);
+
         // Create a new product
         $product = new Product;
         $product->name = $request->name;
@@ -81,7 +81,7 @@ class ProductController extends Controller
         // Return a success response with the created product
         return response()->json([
             "success" => "Product created successfully.",
-            "product" => $product,
+            "product" => $product->load(['brand', 'supplier']),
             "status" => 200
         ]);
     }
@@ -92,21 +92,15 @@ class ProductController extends Controller
     public function show(string $id)
     {
         // Find the product by ID with its associated brand and supplier
-        $product = Product::with('brand', 'supplier')->find($id);
+        $product = Product::with(['brand', 'supplier'])->find($id);
 
         if (!$product) {
             return response()->json(['error' => 'Product not found.', 'status' => 404]);
         }
 
-        // Get all brands and suppliers
-        $brands = Brand::all();
-        $suppliers = Supplier::all();
-
-        // Return a JSON response with the product, brands, and suppliers
+        // Return a JSON response with the product
         return response()->json([
             'product' => $product,
-            'brands' => $brands,
-            'suppliers' => $suppliers,
         ]);
     }
 
@@ -115,6 +109,16 @@ class ProductController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        // Validate the request
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'brand_id' => 'required|exists:brands,id',
+            'supplier_id' => 'required|exists:suppliers,id',
+            'description' => 'nullable|string',
+            'cost' => 'required|numeric',
+            'uploads.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048'
+        ]);
+
         // Find the product by ID
         $product = Product::find($id);
 
@@ -146,7 +150,7 @@ class ProductController extends Controller
         // Return a success response with the updated product
         return response()->json([
             "success" => "Product updated successfully.",
-            "product" => $product,
+            "product" => $product->load(['brand', 'supplier']),
             "status" => 200
         ]);
     }
@@ -170,7 +174,3 @@ class ProductController extends Controller
         return response()->json(['success' => 'Product deleted', 'status' => 200]);
     }
 }
-
-
-
-

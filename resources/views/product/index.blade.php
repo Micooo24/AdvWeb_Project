@@ -1,13 +1,14 @@
 @extends('layouts.master')
+
 @section('content')
 <div id="products" class="container">
     <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-target="#productModal">Add <span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
     <div class="card-body" style="height: 210px;">
         <input type="text" id='productSearch' placeholder="--search--">
     </div>
-    <!-- Table for displaying products -->
     <div class="table-responsive">
-        <table id="itable" class="table table-striped table-hover">
+        <!-- Changed table ID from "itable" to "productTable" -->
+        <table id="productTable" class="table table-striped table-hover">
             <thead>
                 <tr>
                     <th>Product ID</th>
@@ -20,23 +21,22 @@
                     <th>Actions</th>
                 </tr>
             </thead>
-            <tbody id="ibody">
-                <!-- This is where the table rows will be dynamically added -->
+            <!-- Changed tbody ID from "ibody" to "productTbody" -->
+            <tbody id="productTbody">
             </tbody>
         </table>
     </div>
 </div>
 
-<!-- Modal for adding/editing products -->
 <div class="modal fade" id="productModal" role="dialog" style="display:none">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Create New Product</h4>
+                <h4 class="modal-title">Products Management</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="iform" method="#" action="#" enctype="multipart/form-data">
+                <form id="productform" method="POST" enctype="multipart/form-data">
                     <div class="form-group">
                         <label for="name_id" class="control-label">Name</label>
                         <input type="text" class="form-control" id="name_id" name="name">
@@ -45,7 +45,6 @@
                         <label for="brand_id" class="col-sm-2 control-label">Brand</label>
                         <div class="col-sm-12">
                             <select name="brand_id" id="brand_id" class="form-control">
-                                <!-- Options will be dynamically added here -->
                             </select>
                         </div>
                     </div>
@@ -53,7 +52,6 @@
                         <label for="supplier_id" class="col-sm-2 control-label">Supplier</label>
                         <div class="col-sm-12">
                             <select name="supplier_id" id="supplier_id" class="form-control">
-                                <!-- Options will be dynamically added here -->
                             </select>
                         </div>
                     </div>
@@ -80,6 +78,8 @@
     </div>
 </div>
 
+@endsection
 
-
+@section('scripts')
+<script src="{{ asset('js/product.js') }}"></script>
 @endsection

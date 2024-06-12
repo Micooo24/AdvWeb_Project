@@ -28,3 +28,11 @@ Route::apiResource('customers', CustomerController::class);
 Route::apiResource('brands', BrandController::class);
 Route::apiResource('suppliers', SupplierController::class);
 Route::apiResource('products', ProductController::class);
+
+Route::get('/form-data', function () {
+    return response()->json([
+        'brands' => \App\Models\Brand::all(),
+        'suppliers' => \App\Models\Supplier::all()
+    ]);
+});
+

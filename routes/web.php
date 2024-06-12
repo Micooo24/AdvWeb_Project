@@ -53,4 +53,4 @@ Route::view('/brand-all', 'brand.index');
 
 
 Route::view('/supplier', 'supplier.index');
-Route::view('/product', 'product.index');
+ Route::view('/product', 'product.index');

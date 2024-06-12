@@ -22,11 +22,11 @@ class Product extends Model
         return $this->hasMany(Feedback::class);
     }
 
-    public function suppliers() {
+    public function supplier() {
         return $this->belongsTo(Supplier::class);
     }
 
-    public function brands() {
+    public function brand() {
         return $this->belongsTo(Brand::class);
     }
 
