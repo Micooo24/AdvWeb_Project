@@ -29,6 +29,12 @@ Route::apiResource('brands', BrandController::class);
 Route::apiResource('suppliers', SupplierController::class);
 Route::apiResource('products', ProductController::class);
 
+
+//try
+Route::post('/suppliers/import', [SupplierController::class, 'import']);
+
+Route::post('/products/import', [ProductController::class, 'import']);
+
 Route::get('/form-data', function () {
     return response()->json([
         'brands' => \App\Models\Brand::all(),

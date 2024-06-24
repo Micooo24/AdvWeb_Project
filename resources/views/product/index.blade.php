@@ -78,6 +78,18 @@
     </div>
 </div>
 
+<div class ="card-body">
+    <form action = "{{url('products/import')}}" method = "POST" enctype = "multipart/form-data">
+        @csrf
+
+        <div class = "input-group">
+            <input type = "file" name = "importFile" class = "form-control"/>
+            <button type = "submit" class = "btn btn-primary"> Import </button>
+        </div>
+    </form>
+</div>
+
+
 @endsection
 
 @section('scripts')

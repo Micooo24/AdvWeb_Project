@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CustomerController;
+
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\BrandController;
@@ -54,3 +55,8 @@ Route::view('/brand-all', 'brand.index');
 
 Route::view('/supplier', 'supplier.index');
  Route::view('/product', 'product.index');
+
+ Route::post('/suppliers/import', [SupplierController::class, 'import']);
+//  Route::post('/products/import', [ProductController::class, 'import']);
+
+

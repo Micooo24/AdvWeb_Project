@@ -8,6 +8,14 @@ use Illuminate\Support\Str;
 use DataTables;
 use Storage;
 
+
+// Import Excel
+use App\Imports\SuppliersImport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\Debugbar\Facades\Debugbar;
+use Illuminate\Support\Facades\Log;
+
+
 class SupplierController extends Controller
 {
     /**
@@ -122,6 +130,41 @@ class SupplierController extends Controller
         }
         $data = array('error' => 'Supplier not deleted', 'code' => 400);
         return response()->json($data);
+    }
+
+
+    // public function import(Request $request)
+    // {
+    //     // Validate the request
+    //     $request->validate([
+    //         'importFile' => 'required|file|mimes:xlsx,xls'
+    //     ]);
+
+    //     try {
+    //         // Load the Excel file
+    //         $file = $request->file('importFile');
+    //         $import = new SuppliersImport(); // Assuming SupplierImport is the Excel importer class
+    //         Excel::import($import, $file);
+
+    //         return response()->json(['message' => 'Suppliers imported successfully'], 200);
+    //     } catch (\Exception $e) {
+    //         // Log the error and return a response
+    //         Log::error('Error importing suppliers: ' . $e->getMessage());
+    //         return response()->json(['message' => 'Error importing suppliers'], 500);
+    //     }
+    // }
+
+
+
+    public function import (Request $request)
+    {
+      $request ->validate([
+          'importFile' => ['required', 'file', 'mimes:xlsx,xls']
+      ]);
+
+      Excel::import(new SuppliersImport, $request->file('importFile'));
+
+      return redirect()->back()->with('success', 'Suppliers imported successfully');
     }
 }
 

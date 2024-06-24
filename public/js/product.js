@@ -193,6 +193,7 @@ $(document).ready(function () {
             e.preventDefault();
             if (validateForm()) {
                 var updateFormData = new FormData($('#productform')[0]);
+                updateFormData.append("_method", "PUT");
 
                 $.ajax({
                     url: `/api/products/${data.id}`,
